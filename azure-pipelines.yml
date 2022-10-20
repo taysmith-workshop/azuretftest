@@ -1,12 +1,12 @@
-variables:
-  - name: ARM_TENANT_ID
-    value: $(ARM_TENANT_ID)
-  - name: ARM_CLIENT_ID
-    value: $(ARM_CLIENT_ID)
-  - name: ARM_CLIENT_SECRET
-    value: $(ARM_CLIENT_SECRET)
-  - name: ARM_SUBSCRIPTION_ID
-    value: $(ARM_SUBSCRIPTION_ID)
+#variables:
+#  - name: ARM_TENANT_ID
+#    value: $(tenant)
+#  - name: ARM_CLIENT_ID
+#    value: $(appId)
+#  - name: ARM_CLIENT_SECRET
+#    value: $(password)
+#  - name: ARM_SUBSCRIPTION_ID
+#    value: $(id)
 
 trigger:
   branches:
@@ -28,6 +28,10 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
+            set ARM_TENANT_ID=$(tenant)
+            set ARM_CLIENT_ID=$(appId)
+            set ARM_CLIENT_SECRET=$(password)
+            set ARM_SUBSCRIPTION_ID=$(id)
             terraform init
             terraform plan --out tfplan.binary
             terraform show -json tfplan.binary | jq > tfplan.json
