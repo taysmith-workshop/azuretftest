@@ -14,11 +14,12 @@ stages:
       pool:
         vmImage: ubuntu-latest
       steps:
+
       
       - task: AzurePowerShell@5
         inputs:
-          azureSubscription: 'Azure subscription 1(3af17bf0-3584-4f14-8c52-8d07a62a7737)'
-#          azureSubscription: 'pipeline-connection'
+#          azureSubscription: 'Azure subscription 1(3af17bf0-3584-4f14-8c52-8d07a62a7737)'
+          azureSubscription: 'pipeline-connection'
           ScriptType: 'InlineScript'
           Inline: |
             terraform init
