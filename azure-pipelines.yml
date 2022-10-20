@@ -1,13 +1,3 @@
-variables:
-  - name: ARM_TENANT_ID
-    value: $(tenant)
-  - name: ARM_CLIENT_ID
-    value: $(appId)
-  - name: ARM_CLIENT_SECRET
-    value: $(password)
-  - name: ARM_SUBSCRIPTION_ID
-    value: $(id)
-  
 trigger:
   branches:
     include:
