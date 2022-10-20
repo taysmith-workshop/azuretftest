@@ -16,27 +16,32 @@ trigger:
       - README.md
   
 stages:
-  - stage: Validate
-    displayName: Validate
+  - stage: Test
+    displayName: Test
     jobs:
     - job: init
-      displayName: Terraform validate
+      displayName: Terraform testing
       pool:
         vmImage: ubuntu-latest
       steps:
-      - task: PowerShell@2
+      - task: AzureCLI@2
         inputs:
-          targetType: 'inline'
-          script: |
-            $env:ARM_TENANT_ID=${env:TENANT}
-            $env:ARM_CLIENT_ID=${env:APPID}
-            $env:ARM_CLIENT_SECRET=${env:PASSWORD}
-            $env:ARM_SUBSCRIPTION_ID=${env:ID}
+          azureSubscription: 'pipeline-connection'
+          scriptType: 'ps'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
             terraform init
             terraform plan --out tfplan.binary
             terraform show -json tfplan.binary | jq > tfplan.json
-          workingDirectory: '$(build.sourcesdirectory)'
-        displayName: Terraform init
+#      - task: PowerShell@2
+#        inputs:
+#          targetType: 'inline'
+#          script: |
+#             terraform init
+#            terraform plan --out tfplan.binary
+#            terraform show -json tfplan.binary | jq > tfplan.json
+#          workingDirectory: '$(build.sourcesdirectory)'
+#        displayName: Terraform init
       - task: Bash@3
         inputs:
           targetType: 'inline'
