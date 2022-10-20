@@ -31,21 +31,25 @@ stages:
             ARM_CLIENT_SECRET: $(password)
             ARM_SUBSCRIPTION_ID: $(id)
             ARM_TENANT_ID: $(tenant)
-        - task: Bash@3
+        - task: AzureKeyVault@2
           inputs:
-            targetType: 'inline'
-            script: |
-              pip install checkov
-              checkov -f tfplan.json > scan-results.xml
-          displayName: Checkov
-          continueOnError: true
+            azureSubscription: 'pipeline-connection'
+            keyVaultName: 'ts-pipeline-vault'
+            secretsFilter: '*'
+            runAsPreJob: false
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: 3.8
+          displayName: 'Use Python 3.8'
+        - script: pip install checkov
+          displayName: Install Checkov
+        - script: checkov -d . --use-enforcement-rules --bc-api-key $(prisma-access-key)::$(prisma-secret-key) --repo-id prismaiac/tfplangoat --branch main -o cli -o junitxml --output-file-path console,CheckovReport.xml
+          workingDirectory: $(System.DefaultWorkingDirectory)
+          displayName: Run Checkov
         - task: PublishTestResults@2
           inputs:
             testResultsFormat: 'JUnit'
-            searchFolder: '$(System.DefaultWorkingDirectory)'
-            testResultsFiles: '**/*scan-result.xml'
-            mergeTestResults: false
-            testRunTitle: Terraform source code scan
-            failTaskOnFailedTests: false
-            publishRunAttachments: true
-          displayName: Publish Test Result
+            testResultsFiles: '**/CheckovReport.xml'
+            testRunTitle: PrismaCloudTests
+          displayName: Publish Test Results
+          condition: always()
