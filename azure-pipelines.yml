@@ -14,35 +14,38 @@ stages:
       pool:
         vmImage: ubuntu-latest
       steps:
+        - script: terraform init
+          displayName:  Terraform init
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+          env:
+            ARM_CLIENT_ID: $(appId)
+            ARM_CLIENT_SECRET: $(password)
+            ARM_SUBSCRIPTION_ID: $(id)
+            ARM_TENANT_ID: $(tenant)
 
-      
-      - task: AzurePowerShell@5
-        inputs:
-#          azureSubscription: 'Azure subscription 1(3af17bf0-3584-4f14-8c52-8d07a62a7737)'
-          azureSubscription: 'pipeline-connection'
-          ScriptType: 'InlineScript'
-          Inline: |
-            terraform init
-            terraform plan --out tfplan.binary
-            terraform show -json tfplan.binary | jq > tfplan.json
-          azurePowerShellVersion: 'LatestVersion'
-          workingDirectory: '$(build.sourcesdirectory)'
-        displayName: Terraform init
-      - task: Bash@3
-        inputs:
-          targetType: 'inline'
-          script: |
-            pip install checkov
-            checkov -f tfplan.json > scan-results.xml
-        displayName: Checkov
-        continueOnError: true
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: 'JUnit'
-          searchFolder: '$(System.DefaultWorkingDirectory)'
-          testResultsFiles: '**/*scan-result.xml'
-          mergeTestResults: false
-          testRunTitle: Terraform source code scan
-          failTaskOnFailedTests: false
-          publishRunAttachments: true
-        displayName: Publish Test Result
+        - script: terraform plan --out tfplan.binary && terraform show -json tfplan.binary | jq > tfplan.json
+          displayName:  Terraform plan
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+          env:
+            ARM_CLIENT_ID: $(appId)
+            ARM_CLIENT_SECRET: $(password)
+            ARM_SUBSCRIPTION_ID: $(id)
+            ARM_TENANT_ID: $(tenant)
+        - task: Bash@3
+          inputs:
+            targetType: 'inline'
+            script: |
+              pip install checkov
+              checkov -f tfplan.json > scan-results.xml
+          displayName: Checkov
+          continueOnError: true
+        - task: PublishTestResults@2
+          inputs:
+            testResultsFormat: 'JUnit'
+            searchFolder: '$(System.DefaultWorkingDirectory)'
+            testResultsFiles: '**/*scan-result.xml'
+            mergeTestResults: false
+            testRunTitle: Terraform source code scan
+            failTaskOnFailedTests: false
+            publishRunAttachments: true
+          displayName: Publish Test Result
