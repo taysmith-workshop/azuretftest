@@ -1,5 +1,5 @@
 variables:
-  PRISMA_API_URL: <https://api.prismacloud.io>
+  PRISMA_API_URL: https://api.prismacloud.io
 
 trigger:
   branches:
